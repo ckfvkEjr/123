@@ -3,12 +3,12 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-
+plt.rcParams['font.family'] ='Malgun Gothic'
+plt.rcParams['axes.unicode_minus'] =False
+출처: https://giveme-happyending.tistory.com/168 [소연의_개발일지:티스토리]
 fm.fontManager.addfont('/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf')
 plt.rcParams['font.family'] = "NanumBarunGothic"
-!sudo apt-get install -y fonts-nanum
-!sudo fc-cache -fv
-!rm ~/.cache/matplotlib -rf
+
 
 # 페이지 설정
 st.set_page_config(page_title="범죄별 장소 워드클라우드 전체보기", layout="wide")
@@ -45,7 +45,7 @@ try:
 
             if word_freq:
                 wordcloud = WordCloud(
-                    font_path='NanumBarunGothic',  # Windows 기준, macOS/Linux는 AppleGothic/NanumGothic
+                    font_path='Malgun Gothic',  # Windows 기준, macOS/Linux는 AppleGothic/NanumGothic
                     width=500,
                     height=300,
                     background_color='white',
