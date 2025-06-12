@@ -2,7 +2,13 @@ import streamlit as st
 import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import os
+import matplotlib.font_manager as fm
+
+fm.fontManager.addfont('/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf')
+plt.rcParams['font.family'] = "NanumBarunGothic"
+!sudo apt-get install -y fonts-nanum
+!sudo fc-cache -fv
+!rm ~/.cache/matplotlib -rf
 
 # 페이지 설정
 st.set_page_config(page_title="범죄별 장소 워드클라우드 전체보기", layout="wide")
@@ -13,16 +19,6 @@ sheet_id = "19ohlE5IooA0OnZ5oC7eVokKXq8WvbDvmz4HU8CYGFHU"
 sheet_name = "sin"
 url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
 
-if os.name == 'nt':  # Windows
-    font_path = 'C:/Windows/Fonts/malgun.ttf'
-elif os.name == 'posix':  # macOS or Linux
-    if os.path.exists('/usr/share/fonts/truetype/nanum/NanumGothic.ttf'):
-        font_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
-    else:
-        font_path = '/System/Library/Fonts/AppleGothic.ttf'  # macOS
-else:
-    font_path = None  # 예외 처리
-    
 try:
     df = pd.read_csv(url)
 
@@ -49,7 +45,7 @@ try:
 
             if word_freq:
                 wordcloud = WordCloud(
-                    font_path='malgun.ttf',  # Windows 기준, macOS/Linux는 AppleGothic/NanumGothic
+                    font_path='NanumBarunGothic',  # Windows 기준, macOS/Linux는 AppleGothic/NanumGothic
                     width=500,
                     height=300,
                     background_color='white',
