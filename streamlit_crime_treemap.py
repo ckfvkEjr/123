@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
-출처: https://giveme-happyending.tistory.com/168 [소연의_개발일지:티스토리]
 fm.fontManager.addfont('/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf')
 plt.rcParams['font.family'] = "NanumBarunGothic"
 
