@@ -1,6 +1,4 @@
-streamlit
-matplotlib
-seaborn
-pandas
-numpy
-wordcloud
+streamlit>=1.30.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+wordcloud>=1.9.3
