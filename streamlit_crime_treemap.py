@@ -2,63 +2,44 @@ import streamlit as st
 import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-plt.rcParams['font.family'] ='Malgun Gothic'
-plt.rcParams['axes.unicode_minus'] =False
-fm.fontManager.addfont('/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf')
-plt.rcParams['font.family'] = "NanumBarunGothic"
 
-
-# 페이지 설정
-st.set_page_config(page_title="범죄별 장소 워드클라우드 전체보기", layout="wide")
-st.title("📊 범죄중분류별 장소 워드클라우드 전체 시각화")
-
-# 구글 시트에서 데이터 불러오기
+# 구글 시트 CSV 링크
 sheet_id = "19ohlE5IooA0OnZ5oC7eVokKXq8WvbDvmz4HU8CYGFHU"
 sheet_name = "sin"
-url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
+csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
 
-try:
-    df = pd.read_csv(url)
+# 데이터 불러오기
+@st.cache_data
+def load_data(url):
+    return pd.read_csv(url)
 
-    # 범죄중분류 리스트 추출
-    crime_types = df['범죄중분류'].dropna().unique()
+df = load_data(csv_url)
 
-    # 컬럼명 기준 장소 부분만 추출 (앞의 두 열은 범죄대분류/중분류)
-    place_columns = df.columns[2:]
+st.title("📌 범죄별 발생 장소 워드클라우드")
 
-    # 컬럼 수 조절
-    cols = st.columns(2)
+# 데이터 확인용
+st.subheader("데이터 미리보기")
+st.dataframe(df.head())
 
-    for i, crime in enumerate(crime_types):
-        row = df[df['범죄중분류'] == crime]
+# 컬럼 이름 확인 후 선택
+st.subheader("🔍 워드클라우드 생성 기준")
+if '장소' in df.columns and '범죄명' in df.columns:
+    범죄명_목록 = df['범죄명'].dropna().unique()
+    선택_범죄 = st.selectbox("범죄를 선택하세요", 범죄명_목록)
 
-        if not row.empty:
-            # 장소별 수치 추출
-            data = row.iloc[0][place_columns]
+    선택_df = df[df['범죄명'] == 선택_범죄]
+    장소_리스트 = 선택_df['장소'].dropna().tolist()
+    장소_문장 = " ".join(장소_리스트)
 
-            word_freq = {
-                col: int(val) for col, val in data.items()
-                if pd.notna(val) and str(val).isdigit() and int(val) > 0
-            }
+    if 장소_문장:
+        wc = WordCloud(width=800, height=400, background_color='white', font_path=None).generate(장소_문장)
 
-            if word_freq:
-                wordcloud = WordCloud(
-                    font_path='Malgun Gothic',  # Windows 기준, macOS/Linux는 AppleGothic/NanumGothic
-                    width=500,
-                    height=300,
-                    background_color='white',
-                    colormap='Set2'
-                ).generate_from_frequencies(word_freq)
-
-                # 2열 배치
-                with cols[i % 2]:
-                    st.subheader(f"🔍 {crime}")
-                    fig, ax = plt.subplots(figsize=(6, 4))
-                    ax.imshow(wordcloud, interpolation='bilinear')
-                    ax.axis('off')
-                    st.pyplot(fig)
-
-except Exception as e:
-    st.error("❗ 데이터를 불러오는 데 실패했습니다.")
-    st.error(f"오류 내용: {e}")
+        st.subheader(f"🚨 '{선택_범죄}' 관련 장소 워드클라우드")
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.imshow(wc, interpolation='bilinear')
+        ax.axis('off')
+        st.pyplot(fig)
+    else:
+        st.warning("해당 범죄에 대한 장소 데이터가 없습니다.")
+else:
+    st.error("⚠️ '범죄명' 또는 '장소' 컬럼이 존재하지 않습니다. 시트 구조를 다시 확인해 주세요.")
