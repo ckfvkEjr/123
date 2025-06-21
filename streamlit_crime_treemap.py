@@ -32,7 +32,7 @@ word_freq = 장소빈도.to_dict()
 
 # 워드클라우드 생성
 wc = WordCloud(
-    font_path="NanumGothic.ttf",  # 한글 폰트 경로 또는 None
+    font_path="NanumGothic-Regular.ttf",  # 한글 폰트 경로 또는 None
     background_color='white',
     width=800,
     height=400
