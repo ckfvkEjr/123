@@ -3,43 +3,44 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-# 구글 시트 CSV 링크
+# Google Sheets CSV 불러오기
 sheet_id = "19ohlE5IooA0OnZ5oC7eVokKXq8WvbDvmz4HU8CYGFHU"
 sheet_name = "sin"
 csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
 
-# 데이터 불러오기
 @st.cache_data
 def load_data(url):
     return pd.read_csv(url)
 
 df = load_data(csv_url)
 
-st.title("📌 범죄별 발생 장소 워드클라우드")
+st.title("📌 범죄별 장소 발생 건수 워드클라우드")
 
-# 데이터 확인용
-st.subheader("데이터 미리보기")
-st.dataframe(df.head())
+# 범죄 종류 선택
+범죄목록 = df['범죄중분류'].unique()
+선택 = st.selectbox("범죄 유형 선택", 범죄목록)
 
-# 컬럼 이름 확인 후 선택
-st.subheader("🔍 워드클라우드 생성 기준")
-if '장소' in df.columns and '범죄명' in df.columns:
-    범죄명_목록 = df['범죄명'].dropna().unique()
-    선택_범죄 = st.selectbox("범죄를 선택하세요", 범죄명_목록)
+# 선택한 범죄에 해당하는 행 가져오기
+선택행 = df[df['범죄중분류'] == 선택]
 
-    선택_df = df[df['범죄명'] == 선택_범죄]
-    장소_리스트 = 선택_df['장소'].dropna().tolist()
-    장소_문장 = " ".join(장소_리스트)
+# 장소별 열만 추출 (범죄대분류, 범죄중분류 제외)
+장소컬럼 = df.columns.difference(['범죄대분류', '범죄중분류'])
+장소빈도 = 선택행[장소컬럼].iloc[0]
 
-    if 장소_문장:
-        wc = WordCloud(width=800, height=400, background_color='white', font_path=None).generate(장소_문장)
+# 워드클라우드 생성용 딕셔너리 만들기
+word_freq = 장소빈도.to_dict()
 
-        st.subheader(f"🚨 '{선택_범죄}' 관련 장소 워드클라우드")
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.imshow(wc, interpolation='bilinear')
-        ax.axis('off')
-        st.pyplot(fig)
-    else:
-        st.warning("해당 범죄에 대한 장소 데이터가 없습니다.")
-else:
-    st.error("⚠️ '범죄명' 또는 '장소' 컬럼이 존재하지 않습니다. 시트 구조를 다시 확인해 주세요.")
+# 워드클라우드 생성
+wc = WordCloud(
+    font_path="NanumGothic.ttf",  # 한글 폰트 경로 또는 None
+    background_color='white',
+    width=800,
+    height=400
+).generate_from_frequencies(word_freq)
+
+# 시각화
+st.subheader(f"🚨 '{선택}' 발생 장소별 워드클라우드")
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.imshow(wc, interpolation='bilinear')
+ax.axis('off')
+st.pyplot(fig)
